@@ -1,0 +1,17 @@
+{
+  "name": "library-graphql-server",
+  "version": "1.0.0",
+  "description": "my first graphql server for a library application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Harshit Balodi",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/server": "^4.10.0",
+    "graphql": "^16.8.1",
+    "uuid": "^9.0.1"
+  }
+}
