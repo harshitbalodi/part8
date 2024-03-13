@@ -1,6 +1,6 @@
 const { ApolloServer } = require("@apollo/server");
 const { startStandaloneServer } = require("@apollo/server/standalone");
-const {v1:uuidV1} = require('uuid');
+const { v1: uuidV1 } = require("uuid");
 
 let authors = [
   {
@@ -80,18 +80,17 @@ let books = [
   },
 ];
 
-
 const typeDefs = `
     type Book{
         title:String!
         published:Int!
         author:String!
-        id:ID!
         genres:[String!]
     }
     type Author{
         name:String!
         born:Int
+        bookCount:Int
     }
     type Query {
     bookCount: Int!
@@ -110,55 +109,48 @@ const resolvers = {
   Query: {
     bookCount: () => books.length,
     authorCount: () => authors.length,
-    allBooks: (root, args) =>{ 
-      if(args.author){ 
-        return books.filter(book => book.author === args.author);
+    allBooks: (root, args) => {
+      if (args.author) {
+        return books.filter((book) => book.author === args.author);
       }
-      if(args.genre){
-        return books.filter(book=>book.genres.some(genre => genre === args.genre));
+      if (args.genre) {
+        return books.filter((book) =>
+          book.genres.some((genre) => genre === args.genre)
+        );
       }
-      
-        return books;
-      
-      },
-      
+
+      return books;
+    },
+
     allAuthors: () =>
       authors.map((author) => ({
-        name: author.name,
+        ...author,
         bookCount: books.filter((book) => book.author === author.name).length,
       })),
   },
-  Mutation:{
-  addBook:(root, args)=>{
-    const exist = authors.find(author=> author.name === args.author);
-    if(!exist){
-     authors = authors.concat({name:args.author,id:uuidV1()});
-    }
-    books =books.concat({...args});
-    return books.find(book=>book.title === args.title);
+  Mutation: {
+    addBook: (root, args) => {
+      const exist = authors.find((author) => author.name === args.author);
+      if (!exist) {
+        authors = authors.concat({ name: args.author, id: uuidV1() });
+      }
+      books = books.concat({ ...args });
+      return books.find((book) => book.title === args.title);
+    },
+    editAuthor: (root, args) => {
+      const exist = authors.some((author) => author.name === args.name);
+      if (!exist) return null;
+      authors = authors.map((author) =>
+        author.name === args.name ? { ...author, born: args.setBornTo } : author
+      );
+      return authors.find((author) => author.name === args.name);
+    },
   },
-  editAuthor:(root, args)=>{
-    // const exist = authors.some(author=> author.name === args.name);
-    // if(!exist) return null;
-    // authors = authors.map(author => author.name === args.name?{...author,born:args.setBornTo}:author);
-    // return authors.find(author=> author.name === args.name);
-
-    const exist = authors.some((author) => author.name === args.name);
-  if (!exist) return null;
-  authors = authors.map((author) =>
-    author.name === args.name ? { ...author, born: args.setBornTo } : author
-  );
-  return authors.find((author) => author.name === args.name);
-  }
-}
 };
-
-
-
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
 });
 
 startStandaloneServer(server, {
